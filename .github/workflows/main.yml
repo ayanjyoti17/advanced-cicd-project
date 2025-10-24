@@ -8,6 +8,11 @@ jobs:
     # This is the most important line!
     runs-on: self-hosted
 
+    # ADD THIS BLOCK TO SET PWSH AS THE DEFAULT SHELL
+    defaults:
+      run:
+        shell: pwsh
+
     steps:
       - name: 1. Checkout Code
         uses: actions/checkout@v3
@@ -24,7 +29,7 @@ jobs:
 
       - name: 4. SonarQube Code Quality Scan
         uses: SonarSource/sonarqube-scan-action@master
-        shell: pwsh
+        # REMOVE THE BAD "shell: pwsh" LINE FROM HERE
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
