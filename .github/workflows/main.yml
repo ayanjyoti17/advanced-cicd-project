@@ -1,0 +1,70 @@
+name: Advanced CI/CD Pipeline
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    # This is the most important line!
+    runs-on: self-hosted
+
+    steps:
+      - name: 1. Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 2. Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: 3. Install Dependencies and Run Tests
+        run: |
+          npm install
+          npm test
+
+      - name: 4. SonarQube Code Quality Scan
+        uses: SonarSource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          # This tells Sonar where to find the test reports
+          args: >
+            -Dsonar.projectKey=my-advanced-app
+            -Dsonar.sources=.
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+      - name: 5. Install Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          install-type: 'binary'
+          version: 'latest'
+          
+      - name: 6. Trivy Filesystem Scan (Check for secrets, etc.)
+        run: |
+          trivy fs --exit-code 0 --no-progress .
+
+      - name: 7. Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 8. Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          # We tag the image with the unique commit hash
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/advanced-app:${{ github.sha }}
+
+      - name: 9. Trivy Image Scan (Check for OS vulnerabilities)
+        run: |
+          trivy image --exit-code 1 --severity CRITICAL ${{ secrets.DOCKERHUB_USERNAME }}/advanced-app:${{ github.sha }}
+
+      - name: 10. Deploy to Minikube
+        run: |
+          # This command tells Kubernetes to use the new image we just pushed
+          kubectl set image deployment/my-app-deployment my-app-container=${{ secrets.DOCKERHUB_USERNAME }}/advanced-app:${{ github.sha }}
+          # This command waits for the update to be complete
+          kubectl rollout status deployment/my-app-deployment
