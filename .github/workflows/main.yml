@@ -56,15 +56,19 @@ jobs:
           context: .
           push: true
           # We tag the image with the unique commit hash
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/advanced-app:${{ github.sha }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/advanced-app:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/advanced-app:latest
 
       - name: 9. Trivy Image Scan (Check for OS vulnerabilities)
         run: |
-          trivy image --exit-code 1 --severity CRITICAL ${{ secrets.DOCKERHUB_USERNAME }}/advanced-app:${{ github.sha }}
+          trivy image --exit-code 1 --severity CRITICAL ${{ secrets.DOCKERHUB_USERNAME }}/advanced-app:latest
 
       - name: 10. Deploy to Minikube
         run: |
-          # This command tells Kubernetes to use the new image we just pushed
-          kubectl set image deployment/my-app-deployment my-app-container=${{ secrets.DOCKERHUB_USERNAME }}/advanced-app:${{ github.sha }}
+          # This command will create the deployment if it doesn't exist,
+          # or update it with the 'latest' image if it does.
+          kubectl apply -f k8s-deployment.yml
+          
           # This command waits for the update to be complete
           kubectl rollout status deployment/my-app-deployment
