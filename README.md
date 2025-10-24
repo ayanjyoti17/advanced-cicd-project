@@ -36,9 +36,9 @@ This pipeline "shifts left," integrating quality and security checks directly in
 ## Project Artifacts
 
 * **SonarQube Dashboard:** A "Passed" quality gate for the `my-advanced-app` project.
-    ![SonarQube Dashboard](sonarqube_dashboard.png) *(Add your SonarQube screenshot here)*
+    ![SonarQube Dashboard](sonarqube_dashboard.png) 
 * **Live Application:** The "Hello World" app, successfully served from the Minikube cluster.
-    ![Live Application](live_application.png) *(Add your final application screenshot here)*
+    ![Live Application](live_application.png) 
 
 ## How to Run This Project
 
