@@ -39,12 +39,6 @@ jobs:
             -Dsonar.projectKey=my-advanced-app
             -Dsonar.sources=.
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-
-      - name: 5. Install Trivy
-        uses: aquasecurity/trivy-action@master
-        with:
-          install-type: 'binary'
-          version: 'latest'
           
       - name: 6. Trivy Filesystem Scan (Check for secrets, etc.)
         run: |
