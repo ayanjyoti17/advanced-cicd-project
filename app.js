@@ -11,8 +11,15 @@ function add(a, b) {
   return a + b;
 }
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// This 'if' statement checks if the file is being run
+// directly with "node app.js".
+// If it is, start the server.
+// If it's being "required" by a test, it will NOT run.
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
 
-module.exports = { app, add }; // Export for testing
+// We still export the app and functions for testing
+module.exports = { app, add };
